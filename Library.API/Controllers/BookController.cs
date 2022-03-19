@@ -15,10 +15,10 @@ namespace Library.API.Controllers
     [Route(RouteConstants.RouteBook)]
     public class BookController : Controller
     {
-        private readonly Mapper _mapper;
+        private readonly IMapper _mapper;
         public BookController(IMapper mapper)
         {
-            _mapper = (Mapper)mapper;
+            _mapper = mapper;
         }
 
         [HttpGet("getAllBooks")]

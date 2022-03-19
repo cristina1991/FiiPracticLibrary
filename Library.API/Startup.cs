@@ -1,4 +1,5 @@
 using Library.API.Constants;
+using Library.API.Extensions.ServiceCollection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,7 @@ namespace Library.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddMapping();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Library API", Version = "v1" });
@@ -34,8 +36,17 @@ namespace Library.API
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseHealthChecks("/health");
+
+            app.UseHttpsRedirection();
+
             app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+
+            app.UseHealthChecks("/health");
 
             app.UsePathBase($"/{RouteConstants.RouteBase}");
 

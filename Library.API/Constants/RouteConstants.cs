@@ -4,5 +4,6 @@
     {
         public const string RouteBase = "/api";
         public const string RouteHealth = "health";
+        public const string RouteBook = "book";
     }
 }

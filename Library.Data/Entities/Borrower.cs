@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Library.API.Models
+namespace Library.Data.Entities
 {
-    public class BorowerModel
+    public class Borrower
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public IList<BookModel> Books { get; set; }
-
+        public IEnumerable<Book> Books { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
-using Library.API.Mappers;
 using Microsoft.Extensions.DependencyInjection;
+using service = Library.BLL.Mapper;
+using api = Library.API.Mappers;
 
 namespace Library.API.Extensions.ServiceCollection
 {
@@ -10,8 +11,10 @@ namespace Library.API.Extensions.ServiceCollection
         {
             var config = new MapperConfiguration(cfg =>
             {
-                cfg.AddProfile(new BookProfile());
-                cfg.AddProfile(new BorowerProfile());
+                cfg.AddProfile(new api.BookProfile());
+                cfg.AddProfile(new api.BorowerProfile());
+                cfg.AddProfile(new service.BookProfile());
+                cfg.AddProfile(new service.BorrowerProfile());
             });
 
             services.AddTransient(c => config.CreateMapper());

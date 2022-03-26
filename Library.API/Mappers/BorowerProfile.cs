@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Library.API.Models;
-using Library.Data.Entities;
+using Library.BLL.Dto;
 
 namespace Library.API.Mappers
 {
@@ -8,7 +8,7 @@ namespace Library.API.Mappers
     {
         public BorowerProfile()
         {
-            CreateMap<Borower, BorowerModel>().ReverseMap();
+            CreateMap<BorrowerDto, BorrowerModel>().ReverseMap();
         }
     }
 }

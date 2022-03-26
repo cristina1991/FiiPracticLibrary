@@ -7,27 +7,27 @@ namespace Library.Data.MockData
     {
         public static IEnumerable<Book> GetAllLibraryMockData()
         {
-            var personsPopulated = new List<Borower>
+            var personsPopulated = new List<Borrower>
             {
-                new Borower
+                new Borrower
                 {
                     Id = 1,
                     FirstName = "Cristina",
                     LastName = "Cris"
                 },
-                new Borower
+                new Borrower
                 {
                     Id = 2,
                     FirstName = "Andreea",
                     LastName = "Andy"
                 },
-                new Borower
+                new Borrower
                 {
                     Id = 3,
                     FirstName = "Mihai",
                     LastName = "Miha"
                 },
-                new Borower
+                new Borrower
                 {
                     Id = 4,
                     FirstName = "Ana",

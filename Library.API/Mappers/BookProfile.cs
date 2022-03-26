@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Library.API.Models;
-using Library.Data.Models;
+using Library.Data.Entities;
 
 namespace Library.API.Mappers
 {
@@ -9,7 +9,7 @@ namespace Library.API.Mappers
         public BookProfile()
         {
             CreateMap<Book, BookModel>()
-                .ForMember(dest=> dest.Id, opt=>opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.BookNameAndYear, opt => opt.MapFrom(src => $"{src.Name} {src.Year}")).ReverseMap();
         }
     }

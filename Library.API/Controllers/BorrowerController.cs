@@ -1,57 +1,67 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Library.API.Constants;
-using System.Linq;
-using Library.Data.MockData;
-using AutoMapper;
-using Library.API.Models;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
+using Library.API.Constants;
+using Library.API.Models;
+using Library.BLL.Interfaces;
 using Library.Data.Entities;
+using Library.Data.MockData;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Library.API.Controllers
 {
-    [Route(RouteConstants.RouteBook)]
-    public class BookController : Controller
+    [Route(RouteConstants.RouteBorrower)]
+    public class BorrowerController : Controller
     {
         private readonly IMapper _mapper;
+        private readonly IBorrowerService _borrowerService;
+        private readonly ILogger<BorrowerController> _logger;
 
-        public BookController(IMapper mapper)
+        public BorrowerController(
+            IMapper mapper, 
+            IBorrowerService borrowerService,
+            ILogger<BorrowerController> logger)
         {
             _mapper = mapper;
+            _borrowerService = borrowerService;
+            _logger = logger;
         }
 
-        [HttpGet("getAllBooks")]
-        public IActionResult GetAll()
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetAll()
         {
             try
             {
-                var result = MockData.GetAllLibraryMockData();
-                var mappedResult = _mapper.Map<IEnumerable<BookModel>>(result);
+                var result = await _borrowerService.GetAll();
+                var mappedResult = _mapper.Map<IList<BorrowerModel>>(result);
 
                 return Ok(mappedResult);
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
             }
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetAll(int id)
+        public async Task<IActionResult> GetAll(int id)
         {
             try
             {
-                var books = MockData.GetAllLibraryMockData();
-                var bookList = books.ToList();
-                var book = bookList.Where(x => x.Id == id).FirstOrDefault();
+                var borrower = await _borrowerService.Get(id);
+                var mappedResult = _mapper.Map<BorrowerModel>(borrower);
 
-                var mappedResult = _mapper.Map<BookModel>(book);
                 return Ok(mappedResult);
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
             }
-
         }
 
         [HttpPost]
@@ -96,7 +106,7 @@ namespace Library.API.Controllers
             {
                 var books = MockData.GetAllLibraryMockData().ToList();
                 var book = books.Where(x => x.Id == id).FirstOrDefault();
-               //to be continued
+                //to be continued
 
                 return Ok(books);
             }

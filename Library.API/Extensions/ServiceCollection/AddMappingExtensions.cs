@@ -12,7 +12,7 @@ namespace Library.API.Extensions.ServiceCollection
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new api.BookProfile());
-                cfg.AddProfile(new api.BorowerProfile());
+                cfg.AddProfile(new api.BorrowerProfile());
                 cfg.AddProfile(new service.BookProfile());
                 cfg.AddProfile(new service.BorrowerProfile());
             });

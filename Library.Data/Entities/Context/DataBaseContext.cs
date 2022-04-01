@@ -24,7 +24,7 @@ namespace Library.Data.Entities.Context
             {
 
                 optionsBuilder.UseSqlServer(
-                    @"Server=(LocalDb)\MSSQLLocalDB;Database=LibraryDb;Trusted_Connection=True;MultipleActiveResultSets=true");
+                    @"Server=CRISTIAN-GAMING\SQLEXPRESS;Database=LibraryDb;Trusted_Connection=True;MultipleActiveResultSets=true");
             }
         }
 

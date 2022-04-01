@@ -11,7 +11,7 @@ namespace Library.API.ServiceCollection
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new BookProfile());
-                cfg.AddProfile(new BorowerProfile());
+                cfg.AddProfile(new BorrowerProfile());
             });
 
             services.AddTransient(cfg=> config.CreateMapper());

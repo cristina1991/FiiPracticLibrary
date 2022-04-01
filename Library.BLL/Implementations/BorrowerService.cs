@@ -39,7 +39,10 @@ namespace Library.BLL.Implementations
 
         public async Task<BorrowerDto> Add(BorrowerDto model)
         {
-            throw new NotImplementedException();
+            var toAddEntity = _mapper.Map<Borrower>(model);
+            var returnedEntity = await _repository.AddAsync(toAddEntity);
+
+            return _mapper.Map<BorrowerDto>(returnedEntity);
         }
 
         public async Task<BorrowerDto> Edit(BorrowerDto model)
@@ -49,7 +52,18 @@ namespace Library.BLL.Implementations
 
         public async Task<BorrowerDto> Delete(int id)
         {
-            throw new NotImplementedException();
+            var entities = await _repository.GetAllAsync();
+            var toDeleteEntity = entities.SingleOrDefault(e=>e.Id== id);
+
+            bool success= await _repository.DeleteAsync(toDeleteEntity);
+
+            if(success)
+            return _mapper.Map<BorrowerDto>(toDeleteEntity);
+
+            else
+            {
+                throw new Exception("The borrower couldn't be found.");
+            }
         }
     }
 }

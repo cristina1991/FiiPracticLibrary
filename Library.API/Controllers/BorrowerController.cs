@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Library.API.Constants;
 using Library.API.Models;
+using Library.BLL.Dto;
 using Library.BLL.Interfaces;
 using Library.Data.Entities;
 using Library.Data.MockData;
@@ -45,7 +46,7 @@ namespace Library.API.Controllers
                 _logger.LogError(e.Message);
                 return BadRequest();
             }
-        }
+         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAll(int id)
@@ -65,42 +66,51 @@ namespace Library.API.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] BookModel model)
+        public async Task<IActionResult> Create([FromBody] BorrowerModel model)
         {
             try
             {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var mappedModel = _mapper.Map<Book>(model);
-                books.Add(mappedModel);
+                var mappedModel = _mapper.Map<BorrowerDto>(model);
 
-                return Ok(books);
+                var returnedEntity = await _borrowerService.Add(mappedModel);
+
+                //var books = MockData.GetAllLibraryMockData().ToList();
+                //var mappedModel = _mapper.Map<Book>(model);
+                //books.Add(mappedModel);
+
+                return Ok(returnedEntity);
             }
-            catch
+            catch(Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
             }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var book = books.Where(x => x.Id == id).FirstOrDefault();
+                var entity = await _borrowerService.Delete(id);
+                //var books = MockData.GetAllLibraryMockData().ToList();
+                //var book = books.Where(x => x.Id == id).FirstOrDefault();
 
-                books.Remove(book);
+                //books.Remove(book);
 
-                return Ok(books);
+                //return Ok(books);
+
+                return await GetAll();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return BadRequest();
             }
         }
 
         [HttpPut]
-        public IActionResult Edit([FromBody] BookModel model, int id)
+        public IActionResult Edit([FromBody] BorrowerModel model, int id)
         {
             try
             {

@@ -41,7 +41,7 @@ namespace Library.Data.MockData
                 {
                     Id = 1,
                     Author = "Jane Austen",
-                    BorowerId = 1,
+                    BorrowerId = 1,
                     Description = "The Pride of Jane Austen! The story is set in England in the late 18th century",
                     Name = "Pride and Prejudice",
                     Year = 1813
@@ -50,7 +50,7 @@ namespace Library.Data.MockData
                 {
                     Id = 2,
                     Author = "F. Scott Fitzgerald",
-                    BorowerId = 1,
+                    BorrowerId = 1,
                     Description = "The Great Gatsby is a 1925 novel by American writer F. Scott Fitzgerald",
                     Name = "The Great Gatsby",
                     Year = 1925
@@ -58,7 +58,7 @@ namespace Library.Data.MockData
                 {
                     Id = 3,
                     Author = "Charlotte Bronte",
-                    BorowerId = 4,
+                    BorrowerId = 4,
                     Description = "Jane Eyre is a novel by English writer Charlotte Bronte  on 16 October 1847",
                     Name = "Jane Eyre",
                     Year = 1847
@@ -66,7 +66,7 @@ namespace Library.Data.MockData
                 {
                     Id = 4,
                     Author = "J. D. Salinger",
-                    BorowerId = 2,
+                    BorrowerId = 2,
                     Description = "The Catcher in the Rye is a novel by J. D. Salinger, partially published in serial form in 1945–1946 and as a novel in 1951",
                     Name = "The Catcher in the Rye",
                     Year = 1951
@@ -74,7 +74,7 @@ namespace Library.Data.MockData
                 {
                     Id = 5,
                     Author = "Miguel de Cervantes",
-                    BorowerId = 3,
+                    BorrowerId = 3,
                     Description = "Don Quixote is a Spanish novel by Miguel de Cervantes. Its full title is The Ingenious Gentleman Don Quixote of La Mancha",
                     Name = "Don Quixote",
                     Year = 1605

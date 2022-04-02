@@ -6,55 +6,68 @@ using AutoMapper;
 using Library.API.Models;
 using System.Collections.Generic;
 using Library.Data.Entities;
+using Library.BLL.Interfaces;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace Library.API.Controllers
 {
     [Route(RouteConstants.RouteBook)]
     public class BookController : Controller
     {
-        private readonly IMapper _mapper;
 
-        public BookController(IMapper mapper)
+        private readonly IMapper _mapper;
+        private readonly IBookService _bookService;
+        private readonly ILogger<BookController> _logger;
+
+        public BookController(
+            IMapper mapper,
+            IBookService bookService,
+            ILogger<BookController> logger)
         {
             _mapper = mapper;
+            _bookService = bookService;
+            _logger = logger;
         }
 
         [HttpGet("getAllBooks")]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
             try
             {
-                var result = MockData.GetAllLibraryMockData();
-                var mappedResult = _mapper.Map<IEnumerable<BookModel>>(result);
+
+                var result = await _bookService.GetAll();
+                var mappedResult = _mapper.Map<IList<BookModel>>(result);
 
                 return Ok(mappedResult);
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
             }
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetAll(int id)
+        public async Task<IActionResult> GetAll(int id)
         {
             try
             {
-                var books = MockData.GetAllLibraryMockData();
-                var bookList = books.ToList();
-                var book = bookList.Where(x => x.Id == id).FirstOrDefault();
-
+                var book = await _bookService.Get(id);
                 var mappedResult = _mapper.Map<BookModel>(book);
+
                 return Ok(mappedResult);
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
             }
-
         }
 
         [HttpPost]
+
         public IActionResult Create([FromBody] BookModel model)
         {
             try

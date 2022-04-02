@@ -14,6 +14,7 @@ namespace Library.Data.Entities.Configurations
 
             builder.Property(x => x.Name).IsRequired();
 
+           // builder.HasOne(x => x.BorrowerId);
         }
     }
 }

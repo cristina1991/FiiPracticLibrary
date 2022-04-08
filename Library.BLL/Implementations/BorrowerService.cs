@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -39,17 +38,35 @@ namespace Library.BLL.Implementations
 
         public async Task<BorrowerDto> Add(BorrowerDto model)
         {
-            throw new NotImplementedException();
+            var mappedBorrower = _mapper.Map<BorrowerDto, Borrower>(model);
+            var addedBorrower = await _repository.AddAsync(mappedBorrower);
+
+            return _mapper.Map<BorrowerDto>(addedBorrower);
         }
 
-        public async Task<BorrowerDto> Edit(BorrowerDto model)
+        public async Task<bool> Edit(BorrowerDto model)
         {
-            throw new NotImplementedException();
+            if(await _repository.ExistsAsync(x => x.Id == model.Id))
+            {
+                var mappedBorrower = _mapper.Map<BorrowerDto, Borrower>(model);
+                var response = await _repository.UpdateAsync(mappedBorrower);
+
+                return response;
+            }
+            return false;
         }
 
         public async Task<BorrowerDto> Delete(int id)
         {
-            throw new NotImplementedException();
+            if (await _repository.ExistsAsync(x => x.Id == id))
+            {
+                var borrower = await _repository.SingleOrDefaultAsync(x => x.Id == id);
+
+                var response = await _repository.DeleteAsync(borrower);
+                return response ? _mapper.Map<BorrowerDto>(borrower) : null;
+
+            }
+            return null;
         }
     }
 }

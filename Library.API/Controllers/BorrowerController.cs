@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Library.API.Constants;
-using Library.API.Models;
-using Library.BLL.Interfaces;
-using Library.Data.Entities;
-using Library.Data.MockData;
 using Microsoft.AspNetCore.Mvc;
+using Library.API.Constants;
+using AutoMapper;
+using Library.API.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Library.BLL.Dto;
+using Library.BLL.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Library.API.Controllers
@@ -65,54 +63,72 @@ namespace Library.API.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] BookModel model)
+        public async Task<IActionResult> Create([FromBody] BorrowerModel model)
         {
             try
             {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var mappedModel = _mapper.Map<Book>(model);
-                books.Add(mappedModel);
+                var mappedModel = _mapper.Map<BorrowerDto>(model);
+                var borrower = await _borrowerService.Add(mappedModel);
 
-                return Ok(books);
+                return Ok(borrower);
             }
-            catch
+            catch(Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
+            }
+        }
+
+
+
+        [HttpPut]
+        public async Task<ActionResult> Edit([FromBody] BorrowerModel model, int id)
+        {
+            if (id == 0)
+            {
+                return BadRequest("id not provided");
+            }
+
+            try
+            {
+                var mappedModel = _mapper.Map<BorrowerDto>(model);
+                var isCreated = await _borrowerService.Edit(mappedModel);
+
+                if (isCreated)
+                {
+                    return Ok("Borrower succesfully created!");
+                }
+                else
+                {
+                    return NotFound("Borrower not found or not created!");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                throw new ApplicationException();
             }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var book = books.Where(x => x.Id == id).FirstOrDefault();
-
-                books.Remove(book);
-
-                return Ok(books);
+                var borrower = await _borrowerService.Delete(id);
+                if (borrower != null)
+                {
+                    return Ok($"Borrower with name ={borrower.FirstName} {borrower.LastName} deleted ");
+                }
+                else
+                {
+                    return NotFound("Borrower not found or not deleted!");
+                }
             }
-            catch
+            catch (Exception e)
             {
-                return BadRequest();
-            }
-        }
-
-        [HttpPut]
-        public IActionResult Edit([FromBody] BookModel model, int id)
-        {
-            try
-            {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var book = books.Where(x => x.Id == id).FirstOrDefault();
-                //to be continued
-
-                return Ok(books);
-            }
-            catch
-            {
-                return BadRequest();
+                _logger.LogError(e.Message);
+                throw new ApplicationException();
             }
         }
     }

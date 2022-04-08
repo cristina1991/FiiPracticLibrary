@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace Library.Data.Interfaces
 {
     public interface IRepository<T> where T : class
@@ -23,6 +24,7 @@ namespace Library.Data.Interfaces
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default(CancellationToken));
+        Task AddAsync(Library.BLL.Dto.BorrowerDto mappedBorrower);
 
         /// <summary>
         /// Gets the <typeparamref name="T"/> in this repository with the specified identifier.

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Library.BLL.Dto;
@@ -63,10 +61,10 @@ namespace Library.BLL.Implementations
             if (await _repository.ExistsAsync(x => x.Id == id))
             {
                 var book = await _repository.SingleOrDefaultAsync(x => x.Id == id);
-                
+
                 var response = await _repository.DeleteAsync(book);
                 return response ? _mapper.Map<BookDto>(book) : null;
-               
+
             }
             return null;
         }

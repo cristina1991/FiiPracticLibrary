@@ -8,8 +8,8 @@ namespace Library.BLL.Interfaces
     {
         Task<IList<BorrowerDto>> GetAll();
         Task<BorrowerDto> Get(int id);
-        Task<BorrowerDto> Add(BorrowerDto model);
-        Task<BorrowerDto> Edit(BorrowerDto model);
+        Task<string> Add(BorrowerDto model);
+        Task<string> Edit(BorrowerDto model);
         Task<BorrowerDto> Delete(int id);
     }
 }

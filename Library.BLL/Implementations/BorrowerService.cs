@@ -75,7 +75,7 @@ namespace Library.BLL.Implementations
         }
 
         /// <summary>
-        /// This function edits a borrower into the database. Errors that may occur:
+        /// This function edits a borrower from the database. Errors that may occur:
         /// Error1 - Borrower not found or not created!
         /// Error2 - The books entered do not correspond to the database!
         /// Error3 - An introduced book has already been borrowed!

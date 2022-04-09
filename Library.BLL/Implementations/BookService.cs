@@ -55,7 +55,7 @@ namespace Library.BLL.Implementations
             return addedBook!=null ? "Success" : "Error2";
         }
         /// <summary>
-        /// This function edits a book into the database. Errors that may occur:
+        /// This function edits a book from the database. Errors that may occur:
         /// Error1 - Book not found!
         /// Error2 - BorrowerId entered is invalid!
         /// Error3 - Strange error occurred!

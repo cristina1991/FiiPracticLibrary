@@ -16,15 +16,18 @@ namespace Library.API.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IBookService _bookService;
+        private readonly IBookValidations _bookValidations;
         private readonly ILogger<BookController> _logger;
 
         public BookController(
             IMapper mapper,
             IBookService bookService,
+            IBookValidations bookValidations,
             ILogger<BookController> logger)
         {
             _mapper = mapper;
             _bookService = bookService;
+            _bookValidations = bookValidations;
             _logger = logger;
         }
 
@@ -34,6 +37,10 @@ namespace Library.API.Controllers
             try
             {
                 var result = await _bookService.GetAll();
+                if (result == null)
+                {
+                    return Ok("No books found!");
+                }
                 var mappedResult = _mapper.Map<IList<BookModel>>(result);
 
                 return Ok(mappedResult);
@@ -46,12 +53,20 @@ namespace Library.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAll(int id)
+        public async Task<IActionResult> GetById(int id)
         {
+            if (id == 0)
+            {
+                return BadRequest("id not provided");
+            }
             try
             {
-                var borrower = await _bookService.Get(id);
-                var mappedResult = _mapper.Map<BookModel>(borrower);
+                var book = await _bookService.Get(id);
+                if (book == null)
+                {
+                    return Ok("Book not found!");
+                }
+                var mappedResult = _mapper.Map<BookModel>(book);
 
                 return Ok(mappedResult);
             }
@@ -65,12 +80,29 @@ namespace Library.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BookModel model)
         {
+            if (model == null)
+            {
+                return BadRequest("The data entered is incorrect!");
+            }
             try
             {
+                var isBorrowerIdValid = await _bookValidations.IsBorrowerIdValid(model.BorrowerId);
+                if (!isBorrowerIdValid)
+                {
+                    return BadRequest("BorrowerId entered is invalid!");
+                }
                 var mappedModel = _mapper.Map<BookDto>(model);
-                var book = await _bookService.Add(mappedModel);
-
-                return Ok(book);
+                var result = await _bookService.Add(mappedModel);
+                
+                if (result != null)
+                {
+                    return Ok(result);
+                    //return Ok("The book has been successfully added!");
+                }
+                else
+                {
+                    return BadRequest("Strange error occurred! Please try again later!");
+                }
             }
             catch (Exception e)
             {
@@ -86,18 +118,35 @@ namespace Library.API.Controllers
             {
                 return BadRequest("id not provided");
             }
+            if (model == null)
+            {
+                return BadRequest("The data entered is incorrect!");
+            }
             try
             {
-                var mappedModel = _mapper.Map<BookDto>(model);
-                var isCreated = await _bookService.Edit(mappedModel);
+                model.Id = id;
 
-                if (isCreated)
+                var isBorrowerIdValid = await _bookValidations.IsBorrowerIdValid(model.BorrowerId);
+                if (!isBorrowerIdValid)
                 {
-                    return Ok("Book successfully created!");
+                    return BadRequest("BorrowerId entered is invalid!");
+                }
+
+                var existsBookWithId = await _bookValidations.ExistsBookById(model.Id);
+                if (!existsBookWithId)
+                {
+                    return BadRequest("Book not found!");
+                }
+                var mappedModel = _mapper.Map<BookDto>(model);
+                var response = await _bookService.Edit(mappedModel);
+
+                if (response)
+                {
+                    return Ok("The book has been successfully edited!");
                 }
                 else
                 {
-                    return NotFound("Book not found or not created!");
+                    return BadRequest("Strange error occurred! Please try again later!");
                 }
                
             }
@@ -112,12 +161,16 @@ namespace Library.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            if (id == 0)
+            {
+                return BadRequest("id not provided");
+            }
             try
             {
                 var book = await _bookService.Delete(id);
                 if (book != null)
                 {
-                    return Ok($"Book with name ={book.Name} deleted ");
+                    return Ok($"Book with name {book.Name} was deleted ");
                 }
                 else
                 {

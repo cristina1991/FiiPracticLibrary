@@ -15,6 +15,10 @@ namespace Library.BLL.Mapper
 
             CreateMap<BorrowerDto, Borrower>()
                 .ReverseMap();
+            CreateMap<Borrower, BorrowerDto>()
+                .ReverseMap();
+
+
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Library.API.Mappers
         public BorowerProfile()
         {
             CreateMap<BorrowerDto, BorrowerModel>().ReverseMap();
+            CreateMap<BorrowerModel, BorrowerDto>().ReverseMap();
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Library.BLL.Mapper
         public BookProfile()
         {
             CreateMap<BookDto, Book>().ReverseMap();
+            CreateMap<Book, BookDto>().ReverseMap();
         }
     }
 }

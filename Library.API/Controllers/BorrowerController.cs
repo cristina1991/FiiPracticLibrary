@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Library.API.Constants;
 using Library.API.Models;
+using Library.BLL.Dto;
 using Library.BLL.Interfaces;
 using Library.Data.Entities;
 using Library.Data.MockData;
@@ -18,15 +19,19 @@ namespace Library.API.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IBorrowerService _borrowerService;
+        private readonly IBorrowerValidations _borrowerValidations;
         private readonly ILogger<BorrowerController> _logger;
 
         public BorrowerController(
             IMapper mapper, 
             IBorrowerService borrowerService,
+            IBorrowerValidations borrowerValidations,
             ILogger<BorrowerController> logger)
         {
             _mapper = mapper;
+            _borrowerValidations = borrowerValidations;
             _borrowerService = borrowerService;
+
             _logger = logger;
         }
 
@@ -36,6 +41,10 @@ namespace Library.API.Controllers
             try
             {
                 var result = await _borrowerService.GetAll();
+                if (result == null)
+                {
+                    return Ok("No borrowers were found!");
+                }
                 var mappedResult = _mapper.Map<IList<BorrowerModel>>(result);
 
                 return Ok(mappedResult);
@@ -48,11 +57,19 @@ namespace Library.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAll(int id)
+        public async Task<IActionResult> GetById(int id)
         {
+            if (id == 0)
+            {
+                return BadRequest("id not provided");
+            }
             try
             {
                 var borrower = await _borrowerService.Get(id);
+                if (borrower == null)
+                {
+                    return Ok("Borrower not found!");
+                }
                 var mappedResult = _mapper.Map<BorrowerModel>(borrower);
 
                 return Ok(mappedResult);
@@ -65,54 +82,123 @@ namespace Library.API.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] BookModel model)
+        public async Task<IActionResult> Create([FromBody] BorrowerModel model)
         {
+            if (model == null)
+            {
+                return BadRequest("The data entered is incorrect!");
+            }
             try
             {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var mappedModel = _mapper.Map<Book>(model);
-                books.Add(mappedModel);
+                var mappedModel = _mapper.Map<BorrowerDto>(model);
+                var existAllBooksInDatabase = await _borrowerValidations.ExistsAllBooksInDatabase(mappedModel);
+                if (!existAllBooksInDatabase)
+                {
+                    return BadRequest("The books entered do not correspond to the database!");
+                }
 
-                return Ok(books);
+                var allBooksAvailable = _borrowerValidations.AllBooksAreAvailable(mappedModel);
+                if (!allBooksAvailable)
+                {
+                    return BadRequest("An introduced book has already been borrowed!");
+                }
+
+                var addedBorrower = await _borrowerService.Add(mappedModel);
+
+                if (addedBorrower != null)
+                {
+                    return Ok("Borrower successfully created!");
+                }
+                else
+                {
+                    return BadRequest("Strange error occurred! Please try again later!");
+                }
+
+                
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
             }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            if (id == 0)
+            {
+                return BadRequest("id not provided");
+            }
             try
             {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var book = books.Where(x => x.Id == id).FirstOrDefault();
-
-                books.Remove(book);
-
-                return Ok(books);
+                var borrower = await _borrowerService.Delete(id);
+                if (borrower != null)
+                {
+                    return Ok($"Borrower with name {borrower.FirstName} {borrower.LastName} was deleted ");
+                }
+                else
+                {
+                    return NotFound("Borrower not found or not deleted!");
+                }
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
             }
         }
 
         [HttpPut]
-        public IActionResult Edit([FromBody] BookModel model, int id)
+        public async Task<IActionResult> Edit([FromBody] BorrowerModel model, int id)
         {
+            if (id == 0)
+            {
+                return BadRequest("id not provided");
+            }
+            if (model == null)
+            {
+                return BadRequest("The data entered is incorrect!");
+            }
             try
             {
-                var books = MockData.GetAllLibraryMockData().ToList();
-                var book = books.Where(x => x.Id == id).FirstOrDefault();
-                //to be continued
+                model.Id = id;
+                var isBorrowerIdValid = await _borrowerValidations.IsBorrowerIdValid(id);
+                if (!isBorrowerIdValid)
+                {
+                    return BadRequest("Borrower not found or not created!");
+                }
+                var mappedModel = _mapper.Map<BorrowerDto>(model);
 
-                return Ok(books);
+                var existAllBooksInDatabase = await _borrowerValidations.ExistsAllBooksInDatabase(mappedModel);
+                if (!existAllBooksInDatabase)
+                {
+                    return BadRequest("The books entered do not correspond to the database!");
+                }
+
+                var allBooksAvailable = _borrowerValidations.AllBooksAreAvailable(mappedModel);
+                if (!allBooksAvailable)
+                {
+                    return BadRequest("An introduced book has already been borrowed!");
+                }
+
+                var response = await _borrowerService.Edit(mappedModel);
+
+                if (response)
+                {
+                    return Ok("Borrower successfully edited!");
+                }
+                else
+                {
+                    return BadRequest("Strange error occurred! Please try again later!");
+                }
+
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return BadRequest();
+                //throw new ApplicationException();
             }
         }
     }

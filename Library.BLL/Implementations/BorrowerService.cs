@@ -8,122 +8,92 @@ using Library.BLL.Interfaces;
 using Library.Data.Entities;
 using Library.Data.Interfaces;
 
+
 namespace Library.BLL.Implementations
 {
     public class BorrowerService : IBorrowerService
     {
-        private readonly IRepository<Borrower> _repository;
+        private readonly IRepository<Borrower> _BorrowerRepository;
         private readonly IRepository<Book> _BookRepository;
         private readonly IMapper _mapper;
 
-        public BorrowerService(IRepository<Borrower> repository, IRepository<Book> BookRepository
+        public BorrowerService(IRepository<Borrower> BorrowerRepository, IRepository<Book> BookRepository
             ,IMapper mapper)
         {
             _BookRepository = BookRepository;
-            _repository = repository;
+            _BorrowerRepository = BorrowerRepository;
             _mapper = mapper;
         }
 
         public async Task<IList<BorrowerDto>> GetAll()
         {
-            var entities = await _repository.GetAllAsync();
+            var entities = await _BorrowerRepository.GetAllAsync();
             return _mapper.Map<IList<BorrowerDto>>(entities);    
         }
 
         public async Task<BorrowerDto> Get(int id)
         { 
-            var entities = await _repository.GetAllAsync();
+            var entities = await _BorrowerRepository.GetAllAsync();
             var entityById = entities.SingleOrDefault(e => e.Id == id);
             var mapped = _mapper.Map<BorrowerDto>(entityById);
 
             return mapped;
         }
 
-        /// <summary>
-        /// This function inserts a borrower into the database. Errors that may occur:
-        /// Error1 - The books entered do not correspond to the database!
-        /// Error2 - An introduced book has already been borrowed!
-        /// Error3 - Strange error occurred! 
-        /// </summary>
-        public async Task<string> Add(BorrowerDto model)
+        public async Task<BorrowerDto> Add(BorrowerDto model)
         {
             try
             {
+                
                 var mappedBorrower = _mapper.Map<BorrowerDto, Borrower>(model);
 
-                for (int i = 0; i < mappedBorrower.Books.Count; i++)
+                //copie la cartile introduse de borrower in lista sa
+                var bookList = new List<Book>();
+
+                foreach(var item in mappedBorrower.Books)
                 {
-                    Book book = new Book();
-                    if (!await _BookRepository.ExistsAsync(x => x == mappedBorrower.Books[i]))
-                    {
-                        return "Error1";
-                    }
-                    if (mappedBorrower.Books[i].BorrowerId != 0)
-                    {
-                        return "Error2";
-                    }
+                    bookList.Add(item);
                 }
 
-                var addedBorrower = await _repository.AddAsync(mappedBorrower);
+                //in functia create borrower se creaza si cartile introduse in aceasta lista, deci
+                //le sterg lista pentru a le schimba id-ul borrower manual mai jos
+                mappedBorrower.Books = null;
 
-                return (addedBorrower!=null) ? "Success" : "Error3";
+                var addedBorrower = await _BorrowerRepository.AddAsync(mappedBorrower);
+
+                if (addedBorrower != null)
+                {
+                    foreach (var item in bookList)
+                    {
+                        item.BorrowerId = addedBorrower.Id;
+                        await _BookRepository.UpdateAsync(item);
+                    }
+                    
+                }
+
+                return _mapper.Map<Borrower, BorrowerDto>(addedBorrower);
             }
             catch
             {
-                return "Error3";
+                return null;
             }
         }
 
-        /// <summary>
-        /// This function edits a borrower from the database. Errors that may occur:
-        /// Error1 - Borrower not found or not created!
-        /// Error2 - The books entered do not correspond to the database!
-        /// Error3 - An introduced book has already been borrowed!
-        /// Error4 - Strange error occurred! 
-        /// </summary>
-        public async Task<string> Edit(BorrowerDto model)
+        public async Task<bool> Edit(BorrowerDto model)
         {
-            try
-            {
-                if (!await _repository.ExistsAsync(x => x.Id == model.Id))
-                {
-                    return "Error1";
-                }
-                var mappedBorrower = _mapper.Map<BorrowerDto, Borrower>(model);
+            var mappedBorrower = _mapper.Map<BorrowerDto, Borrower>(model);
 
-                for (int i = 0; i < mappedBorrower.Books.Count; i++)
-                {
-                    Book book = new Book();
-                    if (!await _BookRepository.ExistsAsync(x => x == mappedBorrower.Books[i]))
-                    {
-                        return "Error2";
-                    }
-                    if (mappedBorrower.Books[i].BorrowerId!=0)
-                    {
-                        return "Error3";
-                    }
-                }
-
-            
-                var response = await _repository.UpdateAsync(mappedBorrower);
-
-                return (response) ? "Success" : "Error4";
-            }
-            catch
-            {
-                return "Error4";
-            }
-            
-
+            var response = await _BorrowerRepository.UpdateAsync(mappedBorrower);
+            return response;
         }
 
         public async Task<BorrowerDto> Delete(int id)
         {
-            if (await _repository.ExistsAsync(x => x.Id == id))
+            if (await _BorrowerRepository.ExistsAsync(x => x.Id == id))
             {
-                var book = await _repository.SingleOrDefaultAsync(x => x.Id == id);
+                var book = await _BorrowerRepository.SingleOrDefaultAsync(x => x.Id == id);
 
-                var response = await _repository.DeleteAsync(book);
+                var response = await _BorrowerRepository.DeleteAsync(book);
                 return response ? _mapper.Map<BorrowerDto>(book) : null;
 
             }

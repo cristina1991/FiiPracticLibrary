@@ -19,15 +19,19 @@ namespace Library.API.Controllers
     {
         private readonly IMapper _mapper;
         private readonly IBorrowerService _borrowerService;
+        private readonly IBorrowerValidations _borrowerValidations;
         private readonly ILogger<BorrowerController> _logger;
 
         public BorrowerController(
             IMapper mapper, 
             IBorrowerService borrowerService,
+            IBorrowerValidations borrowerValidations,
             ILogger<BorrowerController> logger)
         {
             _mapper = mapper;
+            _borrowerValidations = borrowerValidations;
             _borrowerService = borrowerService;
+
             _logger = logger;
         }
 
@@ -53,7 +57,7 @@ namespace Library.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAll(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             if (id == 0)
             {
@@ -87,19 +91,23 @@ namespace Library.API.Controllers
             try
             {
                 var mappedModel = _mapper.Map<BorrowerDto>(model);
-                var result = await _borrowerService.Add(mappedModel);
-
-                if (result == "Success")
-                {
-                    return Ok("Borrower successfully edited!");
-                }
-                else if (result == "Error1")
+                var existAllBooksInDatabase = await _borrowerValidations.ExistsAllBooksInDatabase(mappedModel);
+                if (!existAllBooksInDatabase)
                 {
                     return BadRequest("The books entered do not correspond to the database!");
                 }
-                else if (result == "Error2")
+
+                var allBooksAvailable = _borrowerValidations.AllBooksAreAvailable(mappedModel);
+                if (!allBooksAvailable)
                 {
                     return BadRequest("An introduced book has already been borrowed!");
+                }
+
+                var addedBorrower = await _borrowerService.Add(mappedModel);
+
+                if (addedBorrower != null)
+                {
+                    return Ok("Borrower successfully created!");
                 }
                 else
                 {
@@ -127,11 +135,11 @@ namespace Library.API.Controllers
                 var borrower = await _borrowerService.Delete(id);
                 if (borrower != null)
                 {
-                    return Ok($"Borrower with name {borrower.FirstName} {borrower.LastName} deleted ");
+                    return Ok($"Borrower with name {borrower.FirstName} {borrower.LastName} was deleted ");
                 }
                 else
                 {
-                    return NotFound("Book not found or not deleted!");
+                    return NotFound("Borrower not found or not deleted!");
                 }
             }
             catch (Exception e)
@@ -155,24 +163,30 @@ namespace Library.API.Controllers
             try
             {
                 model.Id = id;
-                var mappedModel = _mapper.Map<BorrowerDto>(model);
-                var result = await _borrowerService.Edit(mappedModel);
-
-                if (result=="Success")
-                {
-                    return Ok("Borrower successfully edited!");
-                }
-                else if (result == "Error1")
+                var isBorrowerIdValid = await _borrowerValidations.IsBorrowerIdValid(id);
+                if (!isBorrowerIdValid)
                 {
                     return BadRequest("Borrower not found or not created!");
                 }
-                else if (result == "Error2")
+                var mappedModel = _mapper.Map<BorrowerDto>(model);
+
+                var existAllBooksInDatabase = await _borrowerValidations.ExistsAllBooksInDatabase(mappedModel);
+                if (!existAllBooksInDatabase)
                 {
                     return BadRequest("The books entered do not correspond to the database!");
                 }
-                else if (result == "Error3")
+
+                var allBooksAvailable = _borrowerValidations.AllBooksAreAvailable(mappedModel);
+                if (!allBooksAvailable)
                 {
                     return BadRequest("An introduced book has already been borrowed!");
+                }
+
+                var response = await _borrowerService.Edit(mappedModel);
+
+                if (response)
+                {
+                    return Ok("Borrower successfully edited!");
                 }
                 else
                 {

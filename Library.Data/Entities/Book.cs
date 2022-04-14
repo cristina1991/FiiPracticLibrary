@@ -1,7 +1,10 @@
-﻿namespace Library.Data.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Library.Data.Entities
 {
     public class Book
     {
+        [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
         public int Year { get; set; }

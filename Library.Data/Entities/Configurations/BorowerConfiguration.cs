@@ -10,7 +10,8 @@ namespace Library.Data.Entities.Configurations
             builder.ToTable("Borrower");
 
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.Id).ValueGeneratedOnAdd();
+            builder.Property(x => x.Id)
+                .ValueGeneratedOnAdd();
         }
     }
 }

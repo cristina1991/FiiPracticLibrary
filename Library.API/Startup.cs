@@ -35,6 +35,7 @@ namespace Library.API
             });
             services.AddServiceLayer();
             services.AddHealthChecks();
+            services.AddValidationsLayer();
         }
 
 
